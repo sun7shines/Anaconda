@@ -1,0 +1,543 @@
+diff -urN anacondachangecode/autopart_type.py anacondachangecode.1/autopart_type.py
+--- anacondachangecode/autopart_type.py	2014-05-19 10:04:08.959947511 +0800
++++ anacondachangecode.1/autopart_type.py	2014-05-19 10:04:16.067060897 +0800
+@@ -283,7 +283,6 @@
+         ##############################################
+         
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -292,12 +291,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        import fvi
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+diff -urN anacondachangecode/backend.py anacondachangecode.1/backend.py
+--- anacondachangecode/backend.py	2014-05-19 10:04:08.959947511 +0800
++++ anacondachangecode.1/backend.py	2014-05-19 10:04:16.068064077 +0800
+@@ -426,17 +426,12 @@
+ def f_installtype(anaconda):
+ 
+     anaconda.sn = '999'    
+-    '''
+     f = open("/root/isotype")
+     lines = f.readlines()
+     f.close()
+     for line in lines:
+         isotype = string.strip(line)
+         break
+-    '''
+-    import fvi
+-    isotype = fvi.get_iso_type(
+-                               )
+     anaconda.isotype = isotype.split('.')[0]
+     # raise TypeError,self.anaconda.isotype
+     if True:
+diff -urN anacondachangecode/bootloader_main_gui.py anacondachangecode.1/bootloader_main_gui.py
+--- anacondachangecode/bootloader_main_gui.py	2014-05-19 10:04:08.962949139 +0800
++++ anacondachangecode.1/bootloader_main_gui.py	2014-05-19 10:04:16.309147432 +0800
+@@ -207,7 +207,6 @@
+             self.password = None
+ 
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -216,12 +215,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        import fvi
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+diff -urN anacondachangecode/cleardisks_gui.py anacondachangecode.1/cleardisks_gui.py
+--- anacondachangecode/cleardisks_gui.py	2014-05-19 10:04:08.966936101 +0800
++++ anacondachangecode.1/cleardisks_gui.py	2014-05-19 10:04:16.592160930 +0800
+@@ -213,7 +213,6 @@
+         #####################################################
+         
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -222,12 +221,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        import fvi 
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+diff -urN anacondachangecode/filter_gui.py anacondachangecode.1/filter_gui.py
+--- anacondachangecode/filter_gui.py	2014-05-19 10:04:08.576938827 +0800
++++ anacondachangecode.1/filter_gui.py	2014-05-19 10:04:14.713936648 +0800
+@@ -695,7 +695,6 @@
+         #####################################################
+         
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -704,12 +703,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        import fvi
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+diff -urN anacondachangecode/filter_type.py anacondachangecode.1/filter_type.py
+--- anacondachangecode/filter_type.py	2014-05-19 10:04:08.588060452 +0800
++++ anacondachangecode.1/filter_type.py	2014-05-19 10:04:14.722141080 +0800
+@@ -62,21 +62,15 @@
+         self.intf = anaconda.intf
+         
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+-        
++    
+         for x in lines:
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        import fvi
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+diff -urN anacondachangecode/fvi.py anacondachangecode.1/fvi.py
+--- anacondachangecode/fvi.py	2014-05-19 10:04:08.967951844 +0800
++++ anacondachangecode.1/fvi.py	1970-01-01 08:00:00.000000000 +0800
+@@ -1,16 +0,0 @@
+-# -*- coding:utf8 -*-
+-
+-import os.path
+-def get_iso_type():
+-    #目前为配合u盘安装，如果读不到isotype,默认为vServer类型。
+-    fn = "/root/isotype"
+-    if not os.path.exists(fn):
+-        return 'vServer.x86_64'
+-    f = open(fn)
+-    lines = f.readlines()
+-    f.close()
+-    
+-    for x in lines:
+-        if x.strip():
+-            return x.strip()
+-    return 'vServer.x86_64'
+\ No newline at end of file
+diff -urN anacondachangecode/gui.py anacondachangecode.1/gui.py
+--- anacondachangecode/gui.py	2014-05-19 10:04:08.670061090 +0800
++++ anacondachangecode.1/gui.py	2014-05-19 10:04:15.366956561 +0800
+@@ -45,7 +45,6 @@
+ from installinterfacebase import InstallInterfaceBase
+ import xutils
+ import imputil
+-import fvi
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("anaconda", x)
+@@ -400,7 +399,6 @@
+     def __init__(self, title, text, parent = None):
+         
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -409,12 +407,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+@@ -441,7 +434,6 @@
+         self.window.set_position (gtk.WIN_POS_CENTER)
+         
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -450,12 +442,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bottomcolor = "#6b6b6b"
+         else:
+@@ -546,7 +533,6 @@
+         self.updsecs = updsecs
+         
+         isBlack = False
+-        '''
+         path = "/root/isotype"
+         if os.access(path,os.F_OK):
+             pass
+@@ -555,16 +541,12 @@
+         f = open(path)
+         lines = f.readlines()
+         f.close()
+-        
++    
+         for x in lines:
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bgcolor = "#333333"
+             bottomcolor = "#6b6b6b"
+@@ -910,7 +892,6 @@
+         ###############################################################
+         
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -919,11 +900,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bgcolor = "#333333"
+         else:
+@@ -969,8 +946,6 @@
+         vbox0.pack_start(ebox4,True,True,0)
+         ################################################################
+         isBlack = False
+-        
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -979,11 +954,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bottomcolor = "#6b6b6b"
+         else:
+@@ -2106,7 +2077,6 @@
+             self.window.maximize()
+             
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -2115,11 +2085,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bottomcolor = "#6b6b6b"
+         else:
+diff -urN anacondachangecode/installation_type.py anacondachangecode.1/installation_type.py
+--- anacondachangecode/installation_type.py	2014-05-19 10:04:08.589060985 +0800
++++ anacondachangecode.1/installation_type.py	2014-05-19 10:04:14.734936250 +0800
+@@ -56,18 +56,14 @@
+             self.intf.messageWindow(_("Error With Data"),
+                                 _(u"必须输入出厂编号才能进行下一步操作！"))
+             raise gui.StayOnScreen
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+         for line in lines:
+             isotype = string.strip(line)
+             break
+-        '''
+-        import fvi
+-        isotype = fvi.get_iso_type()
+-                
+         self.anaconda.isotype = isotype.split('.')[0]
++        #raise TypeError,self.anaconda.isotype
+         if self.buttonGroup_setCurrent == "fast":
+             self.anaconda.id.installationtype = True
+             self.anaconda.dispatch.skipStep("filtertype",skip=1)
+@@ -112,9 +108,6 @@
+         self.intf = anaconda.intf
+ 
+         isBlack = False
+-        import fvi
+-        x = fvi.get_iso_type()
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -123,10 +116,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                 
++
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+diff -urN anacondachangecode/installclass.py anacondachangecode.1/installclass.py
+--- anacondachangecode/installclass.py	2014-05-19 10:04:08.670061090 +0800
++++ anacondachangecode.1/installclass.py	2014-05-19 10:04:15.366323382 +0800
+@@ -191,14 +191,9 @@
+         def is_vc_va():
+ 
+             try:
+-                '''
+                 isotype_file = "/root/isotype"
+                 strs = file(isotype_file).read()
+-                '''
+-                import fvi
+-                x = fvi.get_iso_type()
+-        
+-                if "vCenter" in x or "vAccess" in x:
++                if "vCenter" in strs or "vAccess" in strs:
+                     return True
+             except:
+                 pass
+diff -urN anacondachangecode/keyboard_gui.py anacondachangecode.1/keyboard_gui.py
+--- anacondachangecode/keyboard_gui.py	2014-05-19 10:04:08.956948888 +0800
++++ anacondachangecode.1/keyboard_gui.py	2014-05-19 10:04:15.771024910 +0800
+@@ -151,7 +151,6 @@
+         #align.add(iconBox);
+ 
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -160,12 +159,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        import fvi
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+diff -urN anacondachangecode/partition_gui.py anacondachangecode.1/partition_gui.py
+--- anacondachangecode/partition_gui.py	2014-05-19 10:04:08.956948888 +0800
++++ anacondachangecode.1/partition_gui.py	2014-05-19 10:04:15.770023966 +0800
+@@ -1932,7 +1932,6 @@
+         ###################################################################
+         
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -1941,12 +1940,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        import fvi
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+diff -urN anacondachangecode/partitioning.py anacondachangecode.1/partitioning.py
+--- anacondachangecode/partitioning.py	2014-05-19 10:04:08.588060452 +0800
++++ anacondachangecode.1/partitioning.py	2014-05-19 10:04:14.727936232 +0800
+@@ -48,14 +48,9 @@
+     def is_vc_va():
+ 
+         try:
+-            '''
+             isotype_file = "/root/isotype"
+             strs = file(isotype_file).read()
+-            '''
+-            import fvi
+-            x = fvi.get_iso_type()
+-        
+-            if "vCenter" in x or "vAccess" in x:
++            if "vCenter" in strs or "vAccess" in strs:
+                 return True
+         except:
+             pass
+diff -urN anacondachangecode/progress_gui.py anacondachangecode.1/progress_gui.py
+--- anacondachangecode/progress_gui.py	2014-05-19 10:04:08.671061796 +0800
++++ anacondachangecode.1/progress_gui.py	2014-05-19 10:04:15.368324578 +0800
+@@ -125,7 +125,6 @@
+         #######################################
+         
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -134,12 +133,7 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        import fvi
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True
+-                
++
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+diff -urN anacondachangecode/vServer/backend_vs.py anacondachangecode.1/vServer/backend_vs.py
+--- anacondachangecode/vServer/backend_vs.py	2014-05-19 10:04:08.610060872 +0800
++++ anacondachangecode.1/vServer/backend_vs.py	2014-05-19 10:04:14.908942147 +0800
+@@ -30,7 +30,6 @@
+ from constants import *
+ import subprocess
+ import string
+-import fvi
+ 
+ import isys
+ import kickstart
+@@ -427,16 +426,12 @@
+ def f_installtype(anaconda):
+ 
+     anaconda.sn = '999'
+-    '''
+     f = open("/root/isotype")
+     lines = f.readlines()
+     f.close()
+     for line in lines:
+         isotype = string.strip(line)
+         break
+-    '''
+-    isotype = fvi.get_iso_type()
+-    
+     anaconda.isotype = isotype.split('.')[0]
+     # raise TypeError,self.anaconda.isotype
+     if True:
+diff -urN anacondachangecode/vServer/network_gui_vs.py anacondachangecode.1/vServer/network_gui_vs.py
+--- anacondachangecode/vServer/network_gui_vs.py	2014-05-19 10:04:08.611061218 +0800
++++ anacondachangecode.1/vServer/network_gui_vs.py	2014-05-19 10:04:14.911104107 +0800
+@@ -24,7 +24,6 @@
+ import checklist
+ import subprocess
+ import datacombo
+-import fvi
+ 
+ from constants import *
+ import gettext
+@@ -1169,20 +1168,15 @@
+         self.anaconda = anaconda
+         
+         isBlack = False
+-        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+-        
++    
+         for x in lines:
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-        '''
+-        x = fvi.get_iso_type()
+-        if x.find("vServer") != -1 or x.find("vCenter") != -1:
+-            isBlack = True 
+-        
++
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+diff -urN anacondachangecode/vServer/replace_vs.cfg anacondachangecode.1/vServer/replace_vs.cfg
+--- anacondachangecode/vServer/replace_vs.cfg	2014-05-19 10:04:08.610060872 +0800
++++ anacondachangecode.1/vServer/replace_vs.cfg	2014-05-19 10:04:14.910023201 +0800
+@@ -153,4 +153,3 @@
+ devicetree.py                                 :usr/lib/anaconda/storage/devicetree.py
+ 
+ text.py                                 :usr/lib/anaconda/text.py
+-fvi.py                                        :usr/lib/anaconda/fvi.py

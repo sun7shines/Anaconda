@@ -1,0 +1,450 @@
+Index: cleardisks_gui.py
+===================================================================
+--- cleardisks_gui.py	(版本 14371)
++++ cleardisks_gui.py	(版本 14372)
+@@ -40,7 +40,7 @@
+         for row in self.store:
+             if row[self.rightVisible]:
+                 cleardisks.append(row[OBJECT_COL].name)
+-            else:
++            if row[self.delete_col]:
+                 destroydisks.append(row[OBJECT_COL].name)
+ 
+         if len(cleardisks) == 0:
+@@ -70,6 +70,9 @@
+ 
+         cleardisks.sort(self.anaconda.id.storage.compareDisks)
+ 
++        if bootDisk in destroydisks:
++            destroydisks.remove(bootDisk) 
++
+         self.anaconda.id.storage.clearPartDisks = cleardisks
+         self.anaconda.id.storage.destroyDisks = destroydisks
+         self.anaconda.id.bootloader.updateDriveList([bootDisk])
+@@ -108,7 +111,8 @@
+         self.leftActive = 2
+         self.rightVisible = 4
+         self.rightActive = 5
+-
++        self.delete_col = 6
++        
+         # One store for both views.  First the obejct, then a visible/active for
+         # the left hand side, then a visible/active for the right hand side, then
+         # all the other stuff.
+@@ -120,10 +124,11 @@
+                                    gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN,
+                                    gobject.TYPE_BOOLEAN,
+                                    gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN,
++                                   gobject.TYPE_BOOLEAN,
+                                    gobject.TYPE_STRING, gobject.TYPE_STRING,
+                                    gobject.TYPE_STRING, gobject.TYPE_STRING,
+                                    gobject.TYPE_STRING)
+-        self.store.set_sort_column_id(6, gtk.SORT_ASCENDING)
++        self.store.set_sort_column_id(7, gtk.SORT_ASCENDING)
+ 
+         # The left view shows all the drives that will just be mounted, but
+         # can still be moved to the right hand side.
+@@ -137,13 +142,15 @@
+ 
+         self.leftDS = DeviceSelector(self.store, self.leftSortedModel,
+                                      self.leftTreeView, visible=self.leftVisible,
+-                                     active=self.leftActive)
++                                     active=self.leftActive,delete_col=self.delete_col)
++        self.leftDS.createSelectionCol_2(title=_("格式化"), radioButton=True)
+         self.leftDS.createMenu()
+-        self.leftDS.addColumn(_("Model"), 6)
+-        self.leftDS.addColumn(_("Capacity"), 7)
+-        self.leftDS.addColumn(_("Vendor"), 8)
+-        self.leftDS.addColumn(_("Identifier"), 9)
+-        self.leftDS.addColumn(_("Interconnect"), 10, displayed=False)
++        xxx = 7
++        self.leftDS.addColumn(_("Model"), xxx)
++        self.leftDS.addColumn(_("Capacity"), xxx+1)
++        self.leftDS.addColumn(_("Vendor"), xxx+2)
++        self.leftDS.addColumn(_("Identifier"), xxx+3)
++        self.leftDS.addColumn(_("Interconnect"), xxx+4, displayed=False)
+ 
+         # The right view show all the drives that will be wiped during install.
+         self.rightFilteredModel = self.store.filter_new()
+@@ -159,9 +166,10 @@
+                                       active=self.rightActive)
+         self.rightDS.createSelectionCol(title=_("Boot\nLoader"), radioButton=True)
+         self.rightDS.createMenu()
+-        self.rightDS.addColumn(_("Model"), 6)
+-        self.rightDS.addColumn(_("Capacity"), 7)
+-        self.rightDS.addColumn(_("Identifier"), 9)
++        yyy = 7
++        self.rightDS.addColumn(_("Model"), yyy)
++        self.rightDS.addColumn(_("Capacity"), yyy+1)
++        self.rightDS.addColumn(_("Identifier"), yyy+3)
+ 
+         # Store the first disk (according to our detected BIOS order) for
+         # auto boot device selection
+@@ -177,7 +185,9 @@
+             rightActive = rightVisible and \
+                           d.name in self.anaconda.id.bootloader.drivelist[:1]
+             leftVisible = not rightVisible
+-
++            
++            deletexxx = d.name in self.anaconda.id.storage.destroyDisks
++            
+             if hasattr(d, "wwid"):
+                 ident = d.wwid
+             else:
+@@ -191,6 +201,7 @@
+             self.store.append(None, (d,
+                                      leftVisible, True, False,
+                                      rightVisible, rightActive,
++                                     deletexxx,
+                                      d.model,
+                                      str(int(d.size)) + " MB",
+                                      d.vendor, ident, d.bus))
+Index: __init__.py
+===================================================================
+--- __init__.py	(版本 14371)
++++ __init__.py	(版本 14372)
+@@ -219,8 +219,8 @@
+         rc=1
+     else:
+         rc = anaconda.intf.messageWindow(_("Writing storage configuration to disk"),
+-                                _("现在会将您选择的分区选项写入磁盘。所有在被删除\n或者重新格式化的分区中的数据都会丢失。\n非系统分区所在的硬盘数据将会被删除。"
+-                                  "%s") % (warning),
++                                _("现在会将您选择的分区选项写入磁盘。所有在被删除\n或者重新格式化的分区中的数据都会丢失。\n非系统分区所在的硬盘%s 数据将会被删除。"
++                                  "%s") % (', '.join(anaconda.id.storage.destroyDisks),warning),
+                                 type = "custom", custom_icon="warning",
+                                 custom_buttons=[_(u"上一步"),
+                                                 _("将修改写入磁盘")],
+@@ -232,10 +232,7 @@
+     if rc == 0:
+         return DISPATCH_BACK
+     else:
+-        diskinfo.delete_vgs(anaconda.id.storage.destroyDisks)
+-        for xxdisk in anaconda.id.storage.destroyDisks:
+-            cmd = 'dd if=/dev/zero of=/dev/%s bs=512 count=1 ' % (xxdisk)
+-            os.system(cmd)
++        diskinfo.destroy_disks(anaconda.id.storage.destroyDisks)
+   
+ def writeEscrowPackets(anaconda):
+     escrowDevices = filter(lambda d: d.format.type == "luks" and \
+Index: vCenter/replace_vc.cfg
+===================================================================
+--- vCenter/replace_vc.cfg	(版本 14371)
++++ vCenter/replace_vc.cfg	(版本 14372)
+@@ -158,5 +158,5 @@
+ 
+ devices_info.py                               :usr/lib/anaconda/devices_info.py
+ diskinfo.py                                   :usr/lib/anaconda/diskinfo.py
++DeviceSelector.py                             :usr/lib/anaconda/iw/DeviceSelector.py
+ 
+-
+Index: vAccess/replace_va.cfg
+===================================================================
+--- vAccess/replace_va.cfg	(版本 14371)
++++ vAccess/replace_va.cfg	(版本 14372)
+@@ -159,4 +159,5 @@
+ 
+ devices_info.py                               :usr/lib/anaconda/devices_info.py
+ diskinfo.py                                   :usr/lib/anaconda/diskinfo.py
++DeviceSelector.py                             :usr/lib/anaconda/iw/DeviceSelector.py
+ 
+Index: vServer/replace_vs.cfg
+===================================================================
+--- vServer/replace_vs.cfg	(版本 14371)
++++ vServer/replace_vs.cfg	(版本 14372)
+@@ -159,4 +159,4 @@
+ 
+ devices_info.py                               :usr/lib/anaconda/devices_info.py
+ diskinfo.py                                   :usr/lib/anaconda/diskinfo.py
+-
++DeviceSelector.py                             :usr/lib/anaconda/iw/DeviceSelector.py
+Index: vDesktop/replace_vd.cfg
+===================================================================
+--- vDesktop/replace_vd.cfg	(版本 14371)
++++ vDesktop/replace_vd.cfg	(版本 14372)
+@@ -154,4 +154,5 @@
+ 
+ devices_info.py                               :usr/lib/anaconda/devices_info.py
+ diskinfo.py                                   :usr/lib/anaconda/diskinfo.py
++DeviceSelector.py                             :usr/lib/anaconda/iw/DeviceSelector.py
+ 
+Index: vBox/replace_vb.cfg
+===================================================================
+--- vBox/replace_vb.cfg	(版本 14371)
++++ vBox/replace_vb.cfg	(版本 14372)
+@@ -160,5 +160,5 @@
+ 
+ devices_info.py                               :usr/lib/anaconda/devices_info.py
+ diskinfo.py                                   :usr/lib/anaconda/diskinfo.py
++DeviceSelector.py                             :usr/lib/anaconda/iw/DeviceSelector.py
+ 
+-
+Index: DeviceSelector.py
+===================================================================
+--- DeviceSelector.py	(版本 14371)
++++ DeviceSelector.py	(版本 14372)
+@@ -1,3 +1,4 @@
++# -*- coding:utf8 -*-
+ #
+ # Filtering UI for the simple path through the storage code.
+ #
+@@ -33,13 +34,14 @@
+ # __init__.  active indicates which column tracks whether the row is checked
+ # by default, and visible indicates which column tracks whether the row is
+ # seen or not.
+-VISIBLE_COL = 1
+-ACTIVE_COL = 2
++VISIBLE_COL = 1 
++ACTIVE_COL = 2 
+ 
+ # This should not be overridden.  It controls whether or not a row may be
+ # deselected.  Rows with this column set will stay in selected or not
+ # (whichever they were initialized to) permanently.
+-IMMUTABLE_COL = 3
++IMMUTABLE_COL = 3 
++DELETE_COL = 4
+ 
+ class DeviceDisplayer(object):
+     def _column_toggled(self, menuItem, col):
+@@ -47,7 +49,7 @@
+         # down menu, and obviously makes a column visible (or not).
+         col.set_visible(not col.get_visible())
+ 
+-    def __init__(self, store, model, view, active=ACTIVE_COL, visible=VISIBLE_COL):
++    def __init__(self, store, model, view, active=ACTIVE_COL, visible=VISIBLE_COL,delete_col=DELETE_COL):
+         self.store = store
+         self.model = model
+         self.view = view
+@@ -56,11 +58,12 @@
+ 
+         self.active = active
+         self.visible = visible
++        self.delete_col = delete_col
+ 
+     def addColumn(self, title, num, displayed=True):
+         cell = gtk.CellRendererText()
+         cell.set_property("yalign", 0)
+-
++        #从第num列来获取。
+         col = gtk.TreeViewColumn(title, cell, text=num, active=self.active)
+         col.set_visible(displayed)
+         col.set_expand(True)
+@@ -158,6 +161,60 @@
+         self.view.set_headers_clickable(True)
+         self.view.connect("row-activated", self._row_activated, toggledCB, radioButton)
+ 
++    def createSelectionCol_1(self, title="", radioButton=False, toggledCB=None,
++                           membershipCB=None):
++        # Add a column full of checkboxes/radiobuttons in the first column of the view.
++        crt = gtk.CellRendererToggle()
++        crt.set_property("activatable", True)
++        crt.set_property("yalign", 0)
++        crt.set_radio(radioButton)
++
++        crt.connect("toggled", self._device_toggled, toggledCB, radioButton)
++        #默认text=0，从model的第0列获取值。
++        col = gtk.TreeViewColumn(title, crt, active=self.active)
++        col.set_alignment(0.75)
++
++        if not radioButton:
++            self.allButton = gtk.ToggleButton()
++            col.connect("clicked", lambda *args: self.allButton.set_active(self.allButton.get_active() != True))
++
++            col.set_widget(self.allButton)
++            self.allButton.show_all()
++
++            self.allButton.connect("toggled", self._all_clicked, toggledCB, membershipCB)
++
++        self.view.append_column(col)
++
++        dl = gtk.CellRendererToggle()
++        dl.set_property("activatable", True)
++        dl.set_property("yalign", 0)
++        dl.set_radio(False)
++
++        dl.connect("toggled", self.dl_toggled)
++
++        title = "格式化"
++        col1 = gtk.TreeViewColumn(title, dl, active=self.delete_col)
++
++        self.view.append_column(col1)
++        self.view.set_headers_clickable(True)
++        #self.view.connect("row-activated", self._row_activated, toggledCB, radioButton)
++
++    def createSelectionCol_2(self, title="", radioButton=False, toggledCB=None,
++                           membershipCB=None):
++
++        dl = gtk.CellRendererToggle()
++        dl.set_property("activatable", True)
++        dl.set_property("yalign", 0)
++        dl.set_radio(False)
++
++        dl.connect("toggled", self.dl_toggled)
++
++        title = "格式化"
++        col1 = gtk.TreeViewColumn(title, dl, active=self.delete_col)
++
++        self.view.append_column(col1)
++        self.view.set_headers_clickable(True)
++        
+     def _all_clicked(self, button, toggledCB=None, membershipCB=None):
+         # This is called when the Add/Remove all button is checked and does
+         # the obvious.
+@@ -215,3 +272,21 @@
+ 
+             if cb:
+                 cb(not is_checked, self.store[storeRow][OBJECT_COL])
++
++    def dl_toggled(self, button, row):
++        # This is called when the checkbox for a device is clicked or unclicked.
++        iter = self.getStoreIter(row)
++        if not iter:
++            return
++
++        storeRow = self.store.get_path(iter)
++        if self.store[storeRow][IMMUTABLE_COL]:
++            return
++
++        if True: 
++            is_checked = self.store[storeRow][self.delete_col]
++            self.store[storeRow][self.delete_col] = not is_checked
++
++            #if cb:
++            #    cb(not is_checked, self.store[storeRow][OBJECT_COL])
++                                                                          
+Index: diskinfo.py
+===================================================================
+--- diskinfo.py	(版本 14371)
++++ diskinfo.py	(版本 14372)
+@@ -116,6 +116,15 @@
+                 if harddisk and harddisk.strip().split('/')[-1] in destroyDisks:
+                     cmd = 'vgremove -f ' + pv['vgname'].strip()
+                     os.system(cmd)
++                    cmd = 'pvremove -ff ' + pv['device'].strip()
++                    os.system(cmd)
+ 
+     return ''
+ 
++def destroy_disks(destroyDisks):
++
++    delete_vgs(destroyDisks)
++    for xxdisk in destroyDisks:
++        cmd = 'dd if=/dev/zero of=/dev/%s bs=512 count=1 ' % (xxdisk)
++        os.system(cmd)
++  
+Index: filter_gui.py
+===================================================================
+--- filter_gui.py	(版本 14371)
++++ filter_gui.py	(版本 14372)
+@@ -58,6 +58,19 @@
+ TARGET_COL = 13
+ LUN_COL = 14
+ 
++XXX = 5 
++DEVICE_COL = XXX
++MODEL_COL = XXX + 1
++CAPACITY_COL =  XXX + 2
++VENDOR_COL =  XXX + 3
++INTERCONNECT_COL =  XXX + 4
++SERIAL_COL =  XXX + 5
++ID_COL =  XXX + 6
++MEMBERS_COL =  XXX + 7
++PORT_COL =  XXX + 8
++TARGET_COL =  XXX + 9
++LUN_COL =  XXX + 10
++
+ # This is kind of a magic class that is used for populating the device store.
+ # It mostly acts like a list except for some funny behavior on adding/getting.
+ # You must add udev dicts to this list, but when you go to examine the list
+@@ -362,9 +375,9 @@
+         self.cb.model = self.sortedModel
+ 
+         self.ds = DeviceSelector(store, self.sortedModel, self.treeView,
+-                                 visible=VISIBLE_COL, active=ACTIVE_COL)
++                                 visible=VISIBLE_COL, active=ACTIVE_COL, delete_col=DELETE_COL)
+         self.ds.createMenu()
+-        self.ds.createSelectionCol(title=" ",radioButton=True,toggledCB=self.cb.deviceToggled,
++        self.ds.createSelectionCol_1(title=" ",radioButton=True,toggledCB=self.cb.deviceToggled,
+                                    membershipCB=self.cb.isMember)
+ 
+         self.filteredModel.set_visible_func(self.cb.visible, self.treeView)
+@@ -445,14 +458,18 @@
+ 
+         self.anaconda.id.storage.exclusiveDisks = list(selected)
+ 
+-        allDisks = set()
++        clearDisks = set()
+         for dev in set(self.store):
+             info = dev[OBJECT_COL]
+-            allDisks.add(udev_device_get_name(info))
+-        clearDisks = allDisks.difference(selected)
+-        for xxdisk in clearDisks:
+-            self.anaconda.id.storage.destroyDisks.append(xxdisk)
++            if dev[DELETE_COL]:
++                harddisk = udev_device_get_name(info)
++                if harddisk in self.anaconda.id.storage.exclusiveDisks:
++                    #被选中安装的硬盘不格式化
++                    continue
++                clearDisks.add(harddisk)
+ 
++        self.anaconda.id.storage.destroyDisks = list(clearDisks)
++
+     def _add_advanced_clicked(self, button):
+         from advanced_storage import addDrive
+ 
+@@ -626,9 +643,9 @@
+         # visible, active (checked), immutable,
+         # device, model, capacity, vendor, interconnect, serial number, wwid
+         # paths, port, target, lun
+-        self.store = gtk.TreeStore(gobject.TYPE_PYOBJECT,
++        self.store = gtk.TreeStore(gobject.TYPE_PYOBJECT, 
+                                    gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN,
+-                                   gobject.TYPE_BOOLEAN,
++                                   gobject.TYPE_BOOLEAN,gobject.TYPE_BOOLEAN,
+                                    gobject.TYPE_STRING, gobject.TYPE_STRING,
+                                    gobject.TYPE_LONG, gobject.TYPE_STRING,
+                                    gobject.TYPE_STRING, gobject.TYPE_STRING,
+@@ -818,6 +835,17 @@
+             else:
+                 return False
+ 
++        def _delete(info):
++
++            name = udev_device_get_name(info)
++
++            if self.anaconda.id.storage.destroyDisks and \
++               name in self.anaconda.id.storage.destroyDisks:
++                return True
++            else:
++                return False
++
++
+         for d in nonraids:
+             name = udev_device_get_name(d)
+ 
+@@ -839,7 +867,7 @@
+             else:
+                 ident = udev_device_get_wwid(d)
+ 
+-            tuple = (d, True, _active(d), _isProtected(d), name,
++            tuple = (d, True, _active(d), _isProtected(d), _delete(d), name,
+                      partedDevice.model, long(d["XXX_SIZE"]),
+                      udev_device_get_vendor(d), udev_device_get_bus(d),
+                      udev_device_get_serial(d), ident, "", "", "", "")
+@@ -877,7 +905,7 @@
+                         "sysfs_path": sysfs_path}
+ 
+                 model = "BIOS RAID set (%s)" % rs.rs.set_type
+-                tuple = (data, True, _active(data), _isProtected(data), rs.name,
++                tuple = (data, True, _active(data), _isProtected(data), _delete(data), rs.name,
+                          model, long(size), "", "", "", "",
+                          "\n".join(members), "", "", "")
+                 _addTuple(tuple)
+@@ -907,7 +935,7 @@
+             # dict as that would break NameCache matching
+             data = mpath[0].copy()
+             data["name"] = udev_device_get_multipath_name(mpath[0])
+-            tuple = (data, True, _active(data), _isProtected(data),
++            tuple = (data, True, _active(data), _isProtected(data), _delete(data),
+                      udev_device_get_multipath_name(mpath[0]), model,
+                      long(mpath[0]["XXX_SIZE"]),
+                      udev_device_get_vendor(mpath[0]),

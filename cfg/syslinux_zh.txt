@@ -1,0 +1,51 @@
+default vesamenu.c32
+FONT myfont.psf
+#prompt 1 
+#timeout 600
+
+display boot.msg
+
+menu background splash.png
+MENU RESOLUTION 800 600
+menu color title 0 #ffffffff #00000000 none
+menu color tabmsg 0 #ffffffff #00000000 none
+
+menu color border      1;30;44    #00FFFFFF #00000000 none
+menu color sel 1;30;44 #ff333333 #ffe6e6e6
+menu color unsel 1;37;44  #ffe6e6e6 #00333333
+
+menu color hotsel 0 #ff000000 #ffffffff
+menu color hotkey 7 #ffffffff #ff000000
+menu color scrollbar 0 #ffffffff #00000000
+
+MENU HSHIFT 3 
+MENU MARGIN 5 
+MENU VSHIFT 18 
+MENU WIDTH 44 
+MENU TABMSG  
+
+
+label linux
+  menu label 安装vClass系统 
+  menu default
+  kernel vmlinuz
+  append initrd=initrd.img quiet
+MENU SEPARATOR
+label vesa
+  menu label 使用基本显卡驱动安装vClass系统 
+  kernel vmlinuz
+  append initrd=initrd.img quiet xdriver=vesa nomodeset
+#label rescue
+#  menu label Rescue installed system
+#  kernel vmlinuz
+#  append initrd=initrd.img rescue
+
+MENU SEPARATOR
+label local
+  menu label 从硬盘启动 
+  localboot 0xffff
+#label memtest86
+#  menu label Memory test
+#  kernel memtest
+#  append -
+

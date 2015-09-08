@@ -1,0 +1,829 @@
+Index: cleardisks_gui.py
+===================================================================
+--- cleardisks_gui.py	(版本 13795)
++++ cleardisks_gui.py	(工作副本)
+@@ -213,6 +213,7 @@
+         #####################################################
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -221,7 +222,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        import fvi 
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: bootloader_main_gui.py
+===================================================================
+--- bootloader_main_gui.py	(版本 13795)
++++ bootloader_main_gui.py	(工作副本)
+@@ -207,6 +207,7 @@
+             self.password = None
+ 
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -215,7 +216,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        import fvi
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: keyboard_gui.py
+===================================================================
+--- keyboard_gui.py	(版本 13795)
++++ keyboard_gui.py	(工作副本)
+@@ -151,6 +151,7 @@
+         #align.add(iconBox);
+ 
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -159,7 +160,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        import fvi
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: vCenter/replace_vc.cfg
+===================================================================
+--- vCenter/replace_vc.cfg	(版本 13795)
++++ vCenter/replace_vc.cfg	(工作副本)
+@@ -151,3 +151,4 @@
+ devicetree.py                                 :usr/lib/anaconda/storage/devicetree.py
+ 
+ text.py                                 :usr/lib/anaconda/text.py
++vCenter/fvi_vc.py                                        :usr/lib/anaconda/fvi.py
+Index: vCenter/fvi_vc.py
+===================================================================
+--- vCenter/fvi_vc.py	(版本 0)
++++ vCenter/fvi_vc.py	(版本 0)
+@@ -0,0 +1,6 @@
++# -*- coding:utf8 -*-
++
++import os.path
++def get_iso_type():
++    #目前为配合u盘安装，如果读不到isotype,默认为vServer类型。
++    return 'vCenter.x86_64'
+
+ 属性改变: vCenter/fvi_vc.py
+___________________________________________________________________
+已增加: svn:eol-style
+   + native
+
+Index: vCenter/backend_vc.py
+===================================================================
+--- vCenter/backend_vc.py	(版本 13795)
++++ vCenter/backend_vc.py	(工作副本)
+@@ -392,12 +392,16 @@
+ def f_installtype(anaconda):
+ 
+     anaconda.sn = '999'
++    '''
+     f = open("/root/isotype")
+     lines = f.readlines()
+     f.close()
+     for line in lines:
+         isotype = string.strip(line)
+         break
++    '''
++    import fvi
++    isotype = fvi.get_iso_type()
+     anaconda.isotype = isotype.split('.')[0]
+     # raise TypeError,self.anaconda.isotype
+     if True:
+Index: vCenter/network_gui_vc.py
+===================================================================
+--- vCenter/network_gui_vc.py	(版本 13795)
++++ vCenter/network_gui_vc.py	(工作副本)
+@@ -896,6 +896,7 @@
+         ############################################
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -904,7 +905,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        import fvi
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True 
++            
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: gui.py
+===================================================================
+--- gui.py	(版本 13795)
++++ gui.py	(工作副本)
+@@ -45,6 +45,7 @@
+ from installinterfacebase import InstallInterfaceBase
+ import xutils
+ import imputil
++import fvi
+ 
+ import gettext
+ _ = lambda x: gettext.ldgettext("anaconda", x)
+@@ -399,6 +400,7 @@
+     def __init__(self, title, text, parent = None):
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -407,7 +409,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+@@ -434,6 +441,7 @@
+         self.window.set_position (gtk.WIN_POS_CENTER)
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -442,7 +450,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bottomcolor = "#6b6b6b"
+         else:
+@@ -533,6 +546,7 @@
+         self.updsecs = updsecs
+         
+         isBlack = False
++        '''
+         path = "/root/isotype"
+         if os.access(path,os.F_OK):
+             pass
+@@ -541,12 +555,16 @@
+         f = open(path)
+         lines = f.readlines()
+         f.close()
+-    
++        
+         for x in lines:
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bgcolor = "#333333"
+             bottomcolor = "#6b6b6b"
+@@ -892,6 +910,7 @@
+         ###############################################################
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -900,7 +919,11 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bgcolor = "#333333"
+         else:
+@@ -946,6 +969,8 @@
+         vbox0.pack_start(ebox4,True,True,0)
+         ################################################################
+         isBlack = False
++        
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -954,7 +979,11 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bottomcolor = "#6b6b6b"
+         else:
+@@ -2077,6 +2106,7 @@
+             self.window.maximize()
+             
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -2085,7 +2115,11 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bottomcolor = "#6b6b6b"
+         else:
+Index: vAccess/replace_va.cfg
+===================================================================
+--- vAccess/replace_va.cfg	(版本 13795)
++++ vAccess/replace_va.cfg	(工作副本)
+@@ -153,3 +153,4 @@
+ devicetree.py                                 :usr/lib/anaconda/storage/devicetree.py
+ 
+ text.py                                 :usr/lib/anaconda/text.py
++vAccess/fvi_va.py                                        :usr/lib/anaconda/fvi.py
+Index: vAccess/fvi_va.py
+===================================================================
+--- vAccess/fvi_va.py	(版本 0)
++++ vAccess/fvi_va.py	(版本 0)
+@@ -0,0 +1,6 @@
++# -*- coding:utf8 -*-
++
++import os.path
++def get_iso_type():
++    #目前为配合u盘安装，如果读不到isotype,默认为vServer类型。
++    return 'vAccess.x86_64'
+
+ 属性改变: vAccess/fvi_va.py
+___________________________________________________________________
+已增加: svn:eol-style
+   + native
+
+Index: vAccess/backend_va.py
+===================================================================
+--- vAccess/backend_va.py	(版本 13795)
++++ vAccess/backend_va.py	(工作副本)
+@@ -392,12 +392,16 @@
+ def f_installtype(anaconda):
+ 
+     anaconda.sn = '999'
++    '''
+     f = open("/root/isotype")
+     lines = f.readlines()
+     f.close()
+     for line in lines:
+         isotype = string.strip(line)
+         break
++    '''
++    import fvi
++    isotype = fvi.get_iso_type()
+     anaconda.isotype = isotype.split('.')[0]
+     # raise TypeError,self.anaconda.isotype
+     if True:
+Index: vAccess/network_gui_va.py
+===================================================================
+--- vAccess/network_gui_va.py	(版本 13795)
++++ vAccess/network_gui_va.py	(工作副本)
+@@ -892,6 +892,7 @@
+         ############################################
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -900,7 +901,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        import fvi
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True 
++            
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: installation_type.py
+===================================================================
+--- installation_type.py	(版本 13795)
++++ installation_type.py	(工作副本)
+@@ -56,14 +56,18 @@
+             self.intf.messageWindow(_("Error With Data"),
+                                 _(u"必须输入出厂编号才能进行下一步操作！"))
+             raise gui.StayOnScreen
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+         for line in lines:
+             isotype = string.strip(line)
+             break
++        '''
++        import fvi
++        isotype = fvi.get_iso_type()
++                
+         self.anaconda.isotype = isotype.split('.')[0]
+-        #raise TypeError,self.anaconda.isotype
+         if self.buttonGroup_setCurrent == "fast":
+             self.anaconda.id.installationtype = True
+             self.anaconda.dispatch.skipStep("filtertype",skip=1)
+@@ -108,6 +112,9 @@
+         self.intf = anaconda.intf
+ 
+         isBlack = False
++        import fvi
++        x = fvi.get_iso_type()
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -116,7 +123,10 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                 
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: vServer/replace_vs.cfg
+===================================================================
+--- vServer/replace_vs.cfg	(版本 13795)
++++ vServer/replace_vs.cfg	(工作副本)
+@@ -153,3 +153,4 @@
+ devicetree.py                                 :usr/lib/anaconda/storage/devicetree.py
+ 
+ text.py                                 :usr/lib/anaconda/text.py
++vServer/fvi_vs.py                                        :usr/lib/anaconda/fvi.py
+Index: vServer/fvi_vs.py
+===================================================================
+--- vServer/fvi_vs.py	(版本 0)
++++ vServer/fvi_vs.py	(版本 0)
+@@ -0,0 +1,8 @@
++# -*- coding:utf8 -*-
++
++import os.path
++def get_iso_type():
++    #目前为配合u盘安装，如果读不到isotype,默认为vServer类型。
++    #使用u盘安装后，u盘的挂载目录会改变,，不再是/mnt/sysimage/，会防止这种情况发生，依赖其他的软件包，改为
++    #这种方式，直接使用FW方式
++    return 'vServer.x86_64'
+
+ 属性改变: vServer/fvi_vs.py
+___________________________________________________________________
+已增加: svn:eol-style
+   + native
+
+Index: vServer/backend_vs.py
+===================================================================
+--- vServer/backend_vs.py	(版本 13795)
++++ vServer/backend_vs.py	(工作副本)
+@@ -30,6 +30,7 @@
+ from constants import *
+ import subprocess
+ import string
++import fvi
+ 
+ import isys
+ import kickstart
+@@ -426,12 +427,16 @@
+ def f_installtype(anaconda):
+ 
+     anaconda.sn = '999'
++    '''
+     f = open("/root/isotype")
+     lines = f.readlines()
+     f.close()
+     for line in lines:
+         isotype = string.strip(line)
+         break
++    '''
++    isotype = fvi.get_iso_type()
++    
+     anaconda.isotype = isotype.split('.')[0]
+     # raise TypeError,self.anaconda.isotype
+     if True:
+Index: vServer/network_gui_vs.py
+===================================================================
+--- vServer/network_gui_vs.py	(版本 13795)
++++ vServer/network_gui_vs.py	(工作副本)
+@@ -24,6 +24,7 @@
+ import checklist
+ import subprocess
+ import datacombo
++import fvi
+ 
+ from constants import *
+ import gettext
+@@ -1168,15 +1169,20 @@
+         self.anaconda = anaconda
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+-    
++        
+         for x in lines:
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True 
++        
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: vDesktop/replace_vd.cfg
+===================================================================
+--- vDesktop/replace_vd.cfg	(版本 13795)
++++ vDesktop/replace_vd.cfg	(工作副本)
+@@ -147,3 +147,4 @@
+ vDesktop/pngs/icon3_keyboard.png               :usr/share/anaconda/pixmaps/icon3_keyboard.png
+ 
+ text.py                                 :usr/lib/anaconda/text.py
++vDesktop/fvi_vd.py                                        :usr/lib/anaconda/fvi.py
+Index: vDesktop/fvi_vd.py
+===================================================================
+--- vDesktop/fvi_vd.py	(版本 0)
++++ vDesktop/fvi_vd.py	(版本 0)
+@@ -0,0 +1,6 @@
++# -*- coding:utf8 -*-
++
++import os.path
++def get_iso_type():
++    #目前为配合u盘安装，如果读不到isotype,默认为vServer类型。
++    return 'vDesktop.x86_64'
+
+ 属性改变: vDesktop/fvi_vd.py
+___________________________________________________________________
+已增加: svn:eol-style
+   + native
+
+Index: vDesktop/backend_vd.py
+===================================================================
+--- vDesktop/backend_vd.py	(版本 13795)
++++ vDesktop/backend_vd.py	(工作副本)
+@@ -426,12 +426,16 @@
+ def f_installtype(anaconda):
+ 
+     anaconda.sn = '999'
++    '''
+     f = open("/root/isotype")
+     lines = f.readlines()
+     f.close()
+     for line in lines:
+         isotype = string.strip(line)
+         break
++    '''
++    import fvi
++    isotype = fvi.get_iso_type()
+     anaconda.isotype = isotype.split('.')[0]
+     # raise TypeError,self.anaconda.isotype
+     if True:
+Index: vDesktop/network_gui_vd.py
+===================================================================
+--- vDesktop/network_gui_vd.py	(版本 13795)
++++ vDesktop/network_gui_vd.py	(工作副本)
+@@ -1168,6 +1168,7 @@
+         self.anaconda = anaconda
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -1176,7 +1177,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        import fvi
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True 
++            
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: filter_type.py
+===================================================================
+--- filter_type.py	(版本 13795)
++++ filter_type.py	(工作副本)
+@@ -62,15 +62,21 @@
+         self.intf = anaconda.intf
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+-    
++        
+         for x in lines:
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        import fvi
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: vBox/replace_vb.cfg
+===================================================================
+--- vBox/replace_vb.cfg	(版本 13795)
++++ vBox/replace_vb.cfg	(工作副本)
+@@ -152,3 +152,5 @@
+ adddrive.glade                                :usr/share/anaconda/ui/adddrive.glade
+ devicetree.py                                 :usr/lib/anaconda/storage/devicetree.py
+ text.py                                 :usr/lib/anaconda/text.py
++
++vBox/fvi_vb.py                                        :usr/lib/anaconda/fvi.py
+Index: vBox/fvi_vb.py
+===================================================================
+--- vBox/fvi_vb.py	(版本 0)
++++ vBox/fvi_vb.py	(版本 0)
+@@ -0,0 +1,7 @@
++# -*- coding:utf8 -*-
++
++import os.path
++
++def get_iso_type():
++    #目前为配合u盘安装，如果读不到isotype,默认为vServer类型。
++    return 'vBox.x86_64'
+
+ 属性改变: vBox/fvi_vb.py
+___________________________________________________________________
+已增加: svn:eol-style
+   + native
+
+Index: vBox/backend_vb.py
+===================================================================
+--- vBox/backend_vb.py	(版本 13795)
++++ vBox/backend_vb.py	(工作副本)
+@@ -423,12 +423,16 @@
+ def f_installtype(anaconda):
+ 
+     anaconda.sn = '999'
++    '''
+     f = open("/root/isotype")
+     lines = f.readlines()
+     f.close()
+     for line in lines:
+         isotype = string.strip(line)
+         break
++    '''
++    import fvi
++    isotype = fvi.get_iso_type()
+     anaconda.isotype = isotype.split('.')[0]
+     # raise TypeError,self.anaconda.isotype
+     if True:
+Index: vBox/network_gui_vb.py
+===================================================================
+--- vBox/network_gui_vb.py	(版本 13795)
++++ vBox/network_gui_vb.py	(工作副本)
+@@ -1168,6 +1168,7 @@
+         self.anaconda = anaconda
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -1176,7 +1177,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        import fvi
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True 
++            
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: installclass.py
+===================================================================
+--- installclass.py	(版本 13795)
++++ installclass.py	(工作副本)
+@@ -191,9 +191,14 @@
+         def is_vc_va():
+ 
+             try:
++                '''
+                 isotype_file = "/root/isotype"
+                 strs = file(isotype_file).read()
+-                if "vCenter" in strs or "vAccess" in strs:
++                '''
++                import fvi
++                x = fvi.get_iso_type()
++        
++                if "vCenter" in x or "vAccess" in x:
+                     return True
+             except:
+                 pass
+Index: progress_gui.py
+===================================================================
+--- progress_gui.py	(版本 13795)
++++ progress_gui.py	(工作副本)
+@@ -125,6 +125,7 @@
+         #######################################
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -133,7 +134,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        import fvi
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: partition_gui.py
+===================================================================
+--- partition_gui.py	(版本 13795)
++++ partition_gui.py	(工作副本)
+@@ -1932,6 +1932,7 @@
+         ###################################################################
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -1940,7 +1941,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        import fvi
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: filter_gui.py
+===================================================================
+--- filter_gui.py	(版本 13795)
++++ filter_gui.py	(工作副本)
+@@ -695,6 +695,7 @@
+         #####################################################
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -703,7 +704,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        import fvi
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: autopart_type.py
+===================================================================
+--- autopart_type.py	(版本 13795)
++++ autopart_type.py	(工作副本)
+@@ -283,6 +283,7 @@
+         ##############################################
+         
+         isBlack = False
++        '''
+         f = open("/root/isotype")
+         lines = f.readlines()
+         f.close()
+@@ -291,7 +292,12 @@
+             if x.find("vServer") != -1 or x.find("vCenter") != -1:
+                 isBlack = True
+                 break
+-
++        '''
++        import fvi
++        x = fvi.get_iso_type()
++        if x.find("vServer") != -1 or x.find("vCenter") != -1:
++            isBlack = True
++                
+         if isBlack:
+             bgcolor = "#333333"
+             fontcolor = "#e6e6e6"
+Index: partitioning.py
+===================================================================
+--- partitioning.py	(版本 13795)
++++ partitioning.py	(工作副本)
+@@ -48,9 +48,14 @@
+     def is_vc_va():
+ 
+         try:
++            '''
+             isotype_file = "/root/isotype"
+             strs = file(isotype_file).read()
+-            if "vCenter" in strs or "vAccess" in strs:
++            '''
++            import fvi
++            x = fvi.get_iso_type()
++        
++            if "vCenter" in x or "vAccess" in x:
+                 return True
+         except:
+             pass

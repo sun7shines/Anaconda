@@ -1,0 +1,57 @@
+default /boot/syslinux/vesamenu.c32
+MENU BACKGROUND /boot/syslinux/splash.jpg
+FONT /boot/syslinux/myfont.psf
+menu color border 0 #0000 #0000 none
+menu title Syslinux 4.01 引导菜单
+prompt 0
+timeout 90
+
+label ubuntu
+MENU LABEL ^1----Ubuntu 10.04 光盘启动
+kernel /ubuntu/vmlinuz boot=casper iso-scan/filename=/ubuntu/ubuntu.iso locale=zh_CN.UTF-8
+append initrd=/ubuntu/initrd.lz
+
+label ar4dos
+MENU LABEL ^2----矮人DOS工具箱
+kernel /boot/syslinux/memdisk c=60 h=4 s=36 floppy
+append initrd=/boot/dos/dostool.img
+
+label maxdos
+MENU LABEL ^3----MaxDOS工具箱 v7.1
+kernel /boot/syslinux/memdisk c=555 h=2 s=18 floppy
+append initrd=/boot/dos/maxdos.img
+
+label pqmagic
+MENU LABEL ^4----PQmagic磁盘分区工具 v8.05
+kernel /boot/syslinux/memdisk c=60 h=2 s=36 floppy
+append initrd=/boot/dos/pm805.img
+
+label winpe
+MENU LABEL ^5----深度Windows PE v4.1
+kernel /boot/syslinux/ldntldr
+append initrd=/MINIPE/LDRXPE
+
+label puppy
+MENU LABEL ^6----小芭比Linux圣诞版
+kernel /puppy/vmlinuz
+append initrd=/puppy/initrd.gz root=/dev/ram0 pmedia=usbflash psubdir=puppy
+
+label grub
+MENU LABEL ^7----跳转到-Grub4DOS引导菜单
+#kernel /boot/syslinux/ldntldr
+kernel /boot/grub/grub.exe --config-file=/boot/grub/menu.lst
+append initrd=/boot/grub/grldr
+
+label boothd0
+MENU LABEL ^8----从第一硬盘启动
+kernel /boot/syslinux/chain.c32
+append hd0
+
+label boothd1
+MENU LABEL ^9----从第二硬盘启动
+kernel /boot/syslinux/chain.c32
+append hd1
+
+label reboot
+MENU LABEL ^0----重启电脑
+kernel /boot/syslinux/reboot.c32

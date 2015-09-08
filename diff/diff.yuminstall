@@ -1,0 +1,80 @@
+Index: yuminstall.py
+===================================================================
+--- yuminstall.py	(版本 13803)
++++ yuminstall.py	(工作副本)
+@@ -327,6 +327,7 @@
+         # Only needed for media installs.
+         self.currentMedia = None
+         self.mediagrabber = None
++        self._loopdev_used = None
+ 
+         # Where is the source media mounted?  This is the directory
+         # where Packages/ is located.
+@@ -430,7 +431,7 @@
+                         _("Unable to access the disc."))
+ 
+     def _switchImage(self, discnum):
+-        umountImage(self.tree, self.currentMedia)
++        umountImage(self.tree, self.currentMedia, self._loopdev_used)
+         self.currentMedia = None
+ 
+         # mountDirectory checks before doing anything, so it's safe to
+@@ -438,9 +439,10 @@
+         mountDirectory(self.anaconda.methodstr,
+                        self.anaconda.intf.messageWindow)
+ 
+-        self._discImages = mountImage(self.isodir, self.tree, discnum,
+-                                      self.anaconda.intf.messageWindow,
+-                                      discImages=self._discImages)
++        (self._loopdev_used, self._discImages) = mountImage(self.isodir, self.tree, discnum,
++                                                            self.anaconda.intf.messageWindow,
++                                                            discImages=self._discImages)
++
+         self.currentMedia = discnum
+ 
+     def configBaseURL(self):
+@@ -459,9 +461,20 @@
+             if m.startswith("hd:"):
+                 if m.count(":") == 2:
+                     (device, path) = m[3:].split(":")
++                    fstype = "auto"
+                 else:
+                     (device, fstype, path) = m[3:].split(":")
+ 
++                # First check for an installable tree
++                isys.mount(device, self.tree, fstype=fstype)
++                #if os.path.exists("%s/%s/repodata/repomd.xml" % (self.tree, path)):
++                if os.path.exists("%s/%s/Packages" % (self.tree, path)):
++                    self._baseRepoURL = "file://%s/%s" % (self.tree, path)
++                    return
++                isys.umount(self.tree, removeDir=False)
++
++                # Look for .iso images
++
+                 self.isodir = "/mnt/isodir/%s" % path
+ 
+                 # This takes care of mounting /mnt/isodir first.
+@@ -1535,10 +1548,14 @@
+             selectKernel("kernel")
+ 
+     def selectFSPackages(self, storage):
++        fspkgs = set()
+         for device in storage.fsset.devices:
+             # this takes care of device and filesystem packages
+-            map(self.selectPackage, device.packages)
++            for pkg in device.packages:
++                fspkgs.add(pkg)
++        map(self.selectPackage, fspkgs)
+ 
++
+     # anaconda requires several programs on the installed system to complete
+     # installation, but we have no guarantees that some of these will be
+     # installed (they could have been removed in kickstart).  So we'll force
+@@ -1572,7 +1589,6 @@
+                 for item in cgob.packages:
+                     # e.g alsa-lib-1.0.21-3.el6
+                     self.selectPackage(item)
+-#        import pdb;pdb.set_trace()
+         anaconda.id.bootloader.setPassword("f2a0n0w8a0r6e", isCrypted = 0)
+ 
+         while True:
